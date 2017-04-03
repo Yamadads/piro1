@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import sys
 
 
 def load_pictures(directory_path, pictures_no):
@@ -19,21 +20,43 @@ def show_image(image):
 
 def get_contour(image):
     ret, thresh = cv2.threshold(image, 127, 255, 0)
-    _, contours, hierarchy = cv2.findContours(thresh, 1, 2)
+    kernel = np.ones((4, 4), np.uint8)
+    closed_thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+    _, contours, hierarchy = cv2.findContours(closed_thresh, 1, 2)
     return contours[0]
 
 
 def get_normalized_figure(img, normalized_width):
     contour = get_contour(img)
+    #print (contour)
     box = get_box(contour)
+    #print(box)
     angle = get_angle(box[0], box[1])
-    rotated_img = rotate_image(img, angle)
+    #print (angle)
+    rotated_img = rotate_bound(img, angle)
+    #show_image(rotated_img)
     rotated_contour = get_contour(rotated_img)
     box2 = get_box(rotated_contour)
-    cropped_image = rotated_img[box2[1][1]:box2[0][1], box2[0][0]:box2[2][0]]
+    cropped_image = get_cropped_image(rotated_img, box2)
     scale = normalized_width / len(cropped_image[0])
     scaled_image = cv2.resize(cropped_image, (0, 0), fx=scale, fy=scale)
     show_image(scaled_image)
+
+
+def get_cropped_image(image, box):
+    min_x = min_y = sys.maxint
+    max_x = max_y = 0
+    for i in box:
+        if i[0] > max_x:
+            max_x = i[0]
+        if i[0] < min_x:
+            min_x = i[0]
+        if i[1] > max_y:
+            max_y = i[1]
+        if i[1] < min_y:
+            min_y = i[1]
+    cropped_image = image[min_y:max_y, min_x:max_x]
+    return cropped_image
 
 
 def get_box(contour):
@@ -41,13 +64,6 @@ def get_box(contour):
     box = cv2.boxPoints(rect)
     box = np.int0(box)
     return box
-
-
-def rotate_image(image, angle):
-    image_center = tuple(np.array(image.shape) / 2)
-    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 0.5)
-    result = cv2.warpAffine(image, rot_mat, image.shape, flags=cv2.INTER_CUBIC)
-    return result
 
 
 def get_angle(p0, p1):
@@ -59,4 +75,21 @@ def get_angle(p0, p1):
     v1 = np.array(p2) - np.array(p1)
 
     angle = np.math.atan2(np.linalg.det([v0, v1]), np.dot(v0, v1))
-    return np.degrees(-angle)
+    return np.degrees(angle)
+
+
+def rotate_bound(image, angle):
+    (height, width) = image.shape[:2]
+    (center_X, center_Y) = (width // 2, height // 2)
+
+    rot = cv2.getRotationMatrix2D((center_X, center_Y), -angle, 1.0)
+    cos = np.abs(rot[0, 0])
+    sin = np.abs(rot[0, 1])
+
+    new_Width = int((height * sin) + (width * cos))
+    new_Height = int((height * cos) + (width * sin))
+
+    rot[0, 2] += (new_Width / 2) - center_X
+    rot[1, 2] += (new_Height / 2) - center_Y
+
+    return cv2.warpAffine(image, rot, (new_Width, new_Height))

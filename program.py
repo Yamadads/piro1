@@ -12,10 +12,10 @@ def main(args):
 
     contour = iu.get_contour(pictures[0])
 
-    #for i in xrange(pictures_no):
-    #    iu.get_normalized_figure(pictures[i], 300)
+    for i in xrange(pictures_no):
+        iu.get_normalized_figure(pictures[i], 300)
 
-    iu.get_normalized_figure(pictures[4], 300)
+    #iu.get_normalized_figure(pictures[2], 300)
     #iu.show_image(pictures[0])
 
 
