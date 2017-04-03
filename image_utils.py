@@ -14,7 +14,7 @@ def load_pictures(directory_path, pictures_no):
 
 def show_image(text, image):
     cv2.imshow(text, image)
-    cv2.waitKey(100)
+    cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
@@ -40,19 +40,36 @@ def get_contour_with_max_size(contours):
 
 def get_normalized_figure(img, normalized_width, text):
     contour = get_contour(img)
-    # print (contour)
     box = get_box(contour)
-    # print(box)
     angle = get_angle(box[0], box[1])
-    # print (angle)
     rotated_img = rotate_bound(img, angle)
-    # show_image(rotated_img)
     rotated_contour = get_contour(rotated_img)
     box2 = get_box(rotated_contour)
     cropped_image = get_cropped_image(rotated_img, box2)
     scale = float(normalized_width) / float(len(cropped_image[0]))
     scaled_image = cv2.resize(cropped_image, (0, 0), fx=scale, fy=scale)
-    show_image(text, scaled_image)
+    final_image = final_rotate(scaled_image, normalized_width)
+    show_image(text, final_image)
+
+
+def final_rotate(image, normalized_width):
+    images = []
+    images.append(image)
+    #print (images[0][:][-10:])
+    for i in range(3):
+        images.append(rotate_bound(images[i], 90))
+        scale = float(normalized_width) / float(len(images[i + 1][0]))
+        images[i + 1] = cv2.resize(images[i + 1], (0, 0), fx=scale, fy=scale)
+        #print (images[i+1][:][-10:])
+        #show_image(str(i),images[i+1])
+    max_base = 0
+    base = 0
+    for i in range(4):
+        base_sum = np.sum(images[i][:][-30:-2])
+        if base_sum>max_base:
+            max_base = base_sum
+            base = i
+    return images[base]
 
 
 def get_cropped_image(image, box):
