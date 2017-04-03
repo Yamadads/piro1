@@ -12,9 +12,9 @@ def load_pictures(directory_path, pictures_no):
     return pictures
 
 
-def show_image(image):
-    cv2.imshow("image", image)
-    cv2.waitKey(0)
+def show_image(text, image):
+    cv2.imshow(text, image)
+    cv2.waitKey(100)
     cv2.destroyAllWindows()
 
 
@@ -23,24 +23,36 @@ def get_contour(image):
     kernel = np.ones((4, 4), np.uint8)
     closed_thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
     _, contours, hierarchy = cv2.findContours(closed_thresh, 1, 2)
+    return get_contour_with_max_size(contours)
+
+
+def get_contour_with_max_size(contours):
+    if len(contours) > 1:
+        max_length_contour = 0
+        max_length = 0
+        for i in contours:
+            if len(i) > max_length:
+                max_length_contour = i
+                max_length = len(i)
+        return max_length_contour
     return contours[0]
 
 
-def get_normalized_figure(img, normalized_width):
+def get_normalized_figure(img, normalized_width, text):
     contour = get_contour(img)
-    #print (contour)
+    # print (contour)
     box = get_box(contour)
-    #print(box)
+    # print(box)
     angle = get_angle(box[0], box[1])
-    #print (angle)
+    # print (angle)
     rotated_img = rotate_bound(img, angle)
-    #show_image(rotated_img)
+    # show_image(rotated_img)
     rotated_contour = get_contour(rotated_img)
     box2 = get_box(rotated_contour)
     cropped_image = get_cropped_image(rotated_img, box2)
-    scale = normalized_width / len(cropped_image[0])
+    scale = float(normalized_width) / float(len(cropped_image[0]))
     scaled_image = cv2.resize(cropped_image, (0, 0), fx=scale, fy=scale)
-    show_image(scaled_image)
+    show_image(text, scaled_image)
 
 
 def get_cropped_image(image, box):

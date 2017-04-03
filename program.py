@@ -10,12 +10,12 @@ def main(args):
     pictures_no = int(args[2])
     pictures = iu.load_pictures(directory_path, pictures_no)
 
-    contour = iu.get_contour(pictures[0])
+    #contour = iu.get_contour(pictures[0])
 
     for i in xrange(pictures_no):
-        iu.get_normalized_figure(pictures[i], 300)
+        iu.get_normalized_figure(pictures[i], 300, str(i))
 
-    #iu.get_normalized_figure(pictures[2], 300)
+    #iu.get_normalized_figure(pictures[8], 300, "31")
     #iu.show_image(pictures[0])
 
 
