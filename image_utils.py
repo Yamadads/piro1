@@ -12,9 +12,17 @@ def load_pictures(directory_path, pictures_no):
     return pictures
 
 
+def normalize_figures(figures, normalized_width):
+    normalized_figures = []
+    for i in figures:
+        normalized_figures.append(get_normalized_figure(i, normalized_width))
+    return normalized_figures
+
+
 def show_image(text, image):
     cv2.imshow(text, image)
-    cv2.waitKey(0)
+    cv2.waitKey(500)
+    #cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
@@ -38,7 +46,7 @@ def get_contour_with_max_size(contours):
     return contours[0]
 
 
-def get_normalized_figure(img, normalized_width, text):
+def get_normalized_figure(img, normalized_width):
     contour = get_contour(img)
     box = get_box(contour)
     angle = get_angle(box[0], box[1])
@@ -49,24 +57,24 @@ def get_normalized_figure(img, normalized_width, text):
     scale = float(normalized_width) / float(len(cropped_image[0]))
     scaled_image = cv2.resize(cropped_image, (0, 0), fx=scale, fy=scale)
     final_image = final_rotate(scaled_image, normalized_width)
-    show_image(text, final_image)
+    return final_image
 
 
 def final_rotate(image, normalized_width):
     images = []
     images.append(image)
-    #print (images[0][:][-10:])
+    # print (images[0][:][-10:])
     for i in range(3):
         images.append(rotate_bound(images[i], 90))
         scale = float(normalized_width) / float(len(images[i + 1][0]))
         images[i + 1] = cv2.resize(images[i + 1], (0, 0), fx=scale, fy=scale)
-        #print (images[i+1][:][-10:])
-        #show_image(str(i),images[i+1])
+        # print (images[i+1][:][-10:])
+        # show_image(str(i),images[i+1])
     max_base = 0
     base = 0
     for i in range(4):
         base_sum = np.sum(images[i][:][-30:-2])
-        if base_sum>max_base:
+        if base_sum > max_base:
             max_base = base_sum
             base = i
     return images[base]
