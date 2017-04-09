@@ -1,12 +1,13 @@
 import cv2
 import numpy as np
 import sys
+import os.path
 
 
 def load_pictures(directory_path, pictures_no):
     pictures = []
     for i in range(pictures_no):
-        img_path = directory_path + "\\" + str(i) + ".png"
+        img_path = os.path.join(directory_path, str(i) + ".png")
         image = cv2.imread(img_path, 0)
         pictures.append(image)
     return pictures
