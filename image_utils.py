@@ -23,15 +23,17 @@ def normalize_figures(figures, normalized_width):
 def show_image(text, image):
     cv2.imshow(text, image)
     cv2.waitKey(500)
-    #cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
 def get_contour(image):
     ret, thresh = cv2.threshold(image, 127, 255, 0)
+
     kernel = np.ones((4, 4), np.uint8)
+
     closed_thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
     _, contours, hierarchy = cv2.findContours(closed_thresh, 1, 2)
+
     return get_contour_with_max_size(contours)
 
 
@@ -48,29 +50,39 @@ def get_contour_with_max_size(contours):
 
 
 def get_normalized_figure(img, normalized_width):
+
+    img = get_rotated_to_figure_base(rotate_to_box(img), normalized_width)
+
+    # show_image('ewe', img)
+
+    return img
+
+
+def rotate_to_box(img):
     contour = get_contour(img)
     box = get_box(contour)
     angle = get_angle(box[0], box[1])
     rotated_img = rotate_bound(img, angle)
     rotated_contour = get_contour(rotated_img)
     box2 = get_box(rotated_contour)
-    cropped_image = get_cropped_image(rotated_img, box2)
-    scale = float(normalized_width) / float(len(cropped_image[0]))
-    scaled_image = cv2.resize(cropped_image, (0, 0), fx=scale, fy=scale)
-    final_image = final_rotate(scaled_image, normalized_width)
-    return final_image
+
+    return get_cropped_image(rotated_img, box2)
 
 
-def final_rotate(image, normalized_width):
-    images = []
-    images.append(image)
-    # print (images[0][:][-10:])
-    for i in range(3):
-        images.append(rotate_bound(images[i], 90))
-        scale = float(normalized_width) / float(len(images[i + 1][0]))
-        images[i + 1] = cv2.resize(images[i + 1], (0, 0), fx=scale, fy=scale)
-        # print (images[i+1][:][-10:])
-        # show_image(str(i),images[i+1])
+def scale_to_width(img, normalized_width):
+    scale = float(normalized_width) / float(len(img[0]))
+
+    return cv2.resize(img, (0, 0), fx=scale, fy=scale)
+
+
+def get_rotated_to_figure_base(image, normalized_width):
+
+    images = [scale_to_width(image, normalized_width)]
+
+    for rotations in [90, 180, 270]:
+        cur_img = rotate_bound(image, rotations)
+        images.append(scale_to_width(cur_img, normalized_width))
+
     max_base = 0
     base = 0
     for i in range(4):
@@ -78,6 +90,7 @@ def final_rotate(image, normalized_width):
         if base_sum > max_base:
             max_base = base_sum
             base = i
+
     return images[base]
 
 
