@@ -6,8 +6,8 @@ import numpy as np
 def get_classification(normalized_figures):
     classification = []
 
-    test(normalized_figures)
-    return
+    # test(normalized_figures)
+    # return
 
     hu_moments = [[], []]
 
