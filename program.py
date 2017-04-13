@@ -34,6 +34,12 @@ def printResults(classification):
         print(' '.join([str(x) for x in classification[i]]))
 
 
+def fixed_params():
+    return ['.', 'set0', '6']
+
+
+def sys_params():
+    return sys.argv
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(sys_params())
