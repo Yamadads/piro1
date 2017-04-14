@@ -30,7 +30,7 @@ def get_classification(normalized_figures):
 
     print dist[0]
 
-    print hu_moments[0]
+    #print hu_moments[0]
     #print hu_moments[1]
 
     return

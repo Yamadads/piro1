@@ -14,7 +14,7 @@ def main(args):
     #for i in range(pictures_no):
     #    iu.show_image(str(i), normalized_figures[i])
     classification = cc.get_classification(normalized_figures)
-    printResults(classification)
+    #printResults(classification)
     #print classification
 
 
