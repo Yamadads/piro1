@@ -50,15 +50,15 @@ def get_classification(normalized_figures):
                 distance = hu_moments[hu_moment_id][el_i][0] - hu_moments[hu_moment_id][i][0]
 
                 if tuple_id not in dist:
-                    print 'id[{0}] i={1} el_i={2}'.format(tuple_id, i, el_i)
+                    # print 'id[{0}] i={1} el_i={2}'.format(tuple_id, i, el_i)
                     dist[tuple_id] = [0, tuple_pair]
 
                 dist[tuple_id][0] += distance
 
     sorted_dist = sorted(dist.items(), key=lambda x:x[1], reverse=False)
 
-    for val in sorted_dist:
-        print val
+    #for val in sorted_dist:
+    #    print val
 
     results = []
 
@@ -66,7 +66,7 @@ def get_classification(normalized_figures):
 
         best = sorted_dist[0]
 
-        print 'best {0}'.format(best)
+        # print 'best {0}'.format(best)
 
         sorted_dist = [x for x in sorted_dist if not partly_same_tuple(x[1][1], best[1][1])]
 
@@ -98,7 +98,7 @@ def insert_hu_moments(image, hu_list, id, reversed):
     # ale w naszym przypadku nie potrzebujemy chyba az takiej informacji
     log_hu_jun_0 = -np.sign(hu_jun_0) * np.log10(np.abs(hu_jun_0))
 
-    print log_hu_jun_0
+    # print log_hu_jun_0
 
     # odkladamy pierwszy i drugi moment Hu do tabeli z wartosciamy dla wszystkich figur
     for hu_moment_id in range(0, hu_moments_in_use):
