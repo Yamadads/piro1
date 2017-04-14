@@ -40,7 +40,10 @@ def get_contour(image):
 def get_binary_image(image):
     ret, thresh = cv2.threshold(image, 127, 255, 0)
     kernel = np.ones((4, 4), np.uint8)
-    closed_thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+    try:
+        closed_thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+    except:
+        closed_thresh = thresh
     return closed_thresh
 
 

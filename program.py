@@ -38,7 +38,7 @@ def main(args):
 
 def printResults(classification):
     for i in range(len(classification)):
-        print(' '.join([str(x) for x in classification[i][:10]]))
+        print(' '.join([str(x) for x in classification[i][:5]]))
 
 
 def fixed_params():
