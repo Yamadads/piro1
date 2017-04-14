@@ -7,13 +7,16 @@ import contour_classifier as cc
 def main(args):
     if not clu.check_command_line_arguments(args):
         exit()
+
     directory_path = args[1]
     pictures_no = int(args[2])
+
     pictures = iu.load_pictures(directory_path, pictures_no)
     normalized_figures = iu.normalize_figures(pictures, 300)
     #for i in range(pictures_no):
     #    iu.show_image(str(i), normalized_figures[i])
-    classification = cc.get_classification(normalized_figures)
+    for res in cc.get_classification(normalized_figures):
+        print (int(res))
     # printResults(classification)
     #print classification
 
@@ -24,6 +27,7 @@ def main(args):
     #iu.show_image("im", normalized_figures[0])
     #imtemp = normalized_figures[0]
     #iu.show_image("sldkfj", imtemp)
+
     #img2 = cv2.drawContours(imtemp, cont, -1,(255,0,0))
     #drawContours(img, contours, -1, RGB(255, 0, 0), 1.5, 8, hierarchy, 2, Point());
     #iu.show_image("imfsdf", img2)
@@ -35,11 +39,10 @@ def printResults(classification):
 
 
 def fixed_params():
-    return ['.', 'set0', '6']
-
+    return ['.', 'set1', '20']
 
 def sys_params():
     return sys.argv
 
 if __name__ == '__main__':
-    main(fixed_params())
+    main(sys_params())
