@@ -20,8 +20,9 @@ def get_classification(normalized_figures):
                 resize_param = float(len(rotated_junction_image))/float(len(junction_images[j]))
                 test_image = cv2.resize(junction_images[j], None, fx=1, fy=resize_param, interpolation = cv2.INTER_CUBIC)
                 diff = rotated_junction_image ^ test_image
-                #iu.show_image(str(j),diff,500)
                 difference[j]=np.sum(diff[:])
+                if difference[j]>(0.93*len(rotated_junction_image)*len(rotated_junction_image[0])*255):
+                    break
         classification.append(sorted(difference.keys(), key=difference.get, reverse=True)[:5])
     return classification
 
@@ -29,11 +30,8 @@ def get_classification(normalized_figures):
 def get_junction_images(images):
     junction_images = []
     for image_i in range(0, len(images)):
-        #if image_i==14:
-        #    iu.show_image("test", normalized_figures[image_i], 1000)
         junction_image = extract_junction_image(images[image_i])
         junction_images.append(iu.get_binary_image(junction_image))
-        #iu.show_image(str(image_i),iu.get_binary_image(junction_image),700)
     return junction_images
 
 
@@ -47,13 +45,13 @@ def extract_junction_image(image):
 
 def get_junction_contour(figure):
 
-    contour = cv2.approxPolyDP(iu.get_contour(figure), 2, True)
+    contour = cv2.approxPolyDP(iu.get_contour(figure), 7, True)
     #print(len(contour))
     #print(len(contour[0]))
     #print("___")
 
     max_y = max(contour[:, 0, 1])
-    threshold = 40
+    threshold = 20
 
     result = sorted([r.tolist() for r in contour[:, 0, :] if r[1] < max_y - threshold], key=lambda idx: idx[0])
 
