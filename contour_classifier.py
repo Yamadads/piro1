@@ -12,51 +12,51 @@ def get_classification(normalized_figures):
 
         junction0 = extract_junction_image(normalized_figures[image_i])
         #obliczamy 1 i 2 moment Hu
-        insert_hu_moments(junction0, hu_moments, image_i)
+        insert_hu_moments(junction0, hu_moments, image_i, False)
 
         junction_1 = iu.rotate_bound(np.invert(junction0), 180)
+
         # obraz sie rozmazuje... wiec go binaruzejmy
         ret, junction_1 = cv2.threshold(junction_1, 127, 255, 0)
-        # obliczamy jego Hu moments
-        insert_hu_moments(junction_1, hu_moments, image_i)
 
+        # obliczamy jego Hu moments
+        insert_hu_moments(junction_1, hu_moments, image_i, True)
 
     hu_moments[0].sort(key=lambda x:x[0])
     hu_moments[1].sort(key=lambda x:x[0])
 
-    results = [];
-
-    dist = [[], []]
-
-    for i_m in range(0, 2):
-        dist[i_m] = [
-            [hu_moments[i_m][i + 1][0] - hu_moments[i_m][i][0], [hu_moments[i_m][i][1], hu_moments[i_m][i + 1][1]]] for
-            i in range(0, len(hu_moments[i_m]) - 1)]
-        sorted(dist[i_m], reverse=True)
-        # dist[i_m].sort(key=lambda x:x[0], reversed=True)
+    results = []
 
     while True:
+        dist = [[], []]
+
+        for i_m in range(0, 2):
+            for i in range(0, len(hu_moments[i_m]) - 1):
+                for el_i in range(i, len(hu_moments[i_m])):
+                    # can only compare inverted with non inverted images
+                    if hu_moments[i_m][i][2] != hu_moments[i_m][el_i][2]:
+                        dist[i_m].append([hu_moments[i_m][el_i][0] - hu_moments[i_m][i][0], [hu_moments[i_m][i][1], hu_moments[i_m][el_i][1]]])
+
+            sorted(dist[i_m], reverse=True)
 
         bests = [dist[0][0], dist[1][0]]
 
         id_smaller = 0 if bests[0][0] < bests[1][0] else 1
-        id_bigger = abs(id_smaller - 1)
-
+        #print bests[id_smaller][1]
         # remove from smaller
-        dist[id_smaller]= [x for x in dist[id_smaller] if not partly_same_tuple(x[1], bests[id_smaller][1])]
+        hu_moments[0] = [x for x in hu_moments[0] if x[1] not in bests[id_smaller][1]]
+        hu_moments[1] = [x for x in hu_moments[1] if x[1] not in bests[id_smaller][1]]
 
-
-        # remove leftout from bigger
-        dist[id_bigger] = [x for x in dist[id_bigger] if not partly_same_tuple(x[1], bests[id_bigger][1])]
-
+        #print (bests[id_smaller])
         results.append(bests[id_smaller][1])
+        #print 'len ' + str(len(hu_moments[0]))
 
-        # print results
 
-        if len(dist[0]) == 0:
+
+        if len(hu_moments[0]) == 0:
             break
 
-    ordered_result = np.zeros(len(results) * 2)
+    ordered_result = np.zeros(len(normalized_figures))
 
     for x in results:
         ordered_result[x[0]] = x[1]
@@ -72,7 +72,7 @@ def partly_same_tuple(t_a, t_b):
     return False
 
 
-def insert_hu_moments(image, hu_list, id):
+def insert_hu_moments(image, hu_list, id, reversed):
     # obliczamy momenty Hu
     hu_jun_0 = cv2.HuMoments(cv2.moments(image)).flatten()
 
@@ -81,8 +81,8 @@ def insert_hu_moments(image, hu_list, id):
     log_hu_jun_0 = hu_jun_0 # -np.sign(hu_jun_0) * np.log10(np.abs(hu_jun_0))
 
     # odkladamy pierwszy i drugi moment Hu do tabeli z wartosciamy dla wszystkich figur
-    hu_list[0].append([log_hu_jun_0[0], id])
-    hu_list[1].append([log_hu_jun_0[1], id])
+    hu_list[0].append([log_hu_jun_0[0], id, reversed])
+    hu_list[1].append([log_hu_jun_0[1], id, reversed])
 
 
 def extract_junction_image(image):
