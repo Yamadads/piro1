@@ -37,6 +37,13 @@ def get_contour(image):
     return get_contour_with_max_size(contours)
 
 
+def get_binary_image(image):
+    ret, thresh = cv2.threshold(image, 127, 255, 0)
+    kernel = np.ones((4, 4), np.uint8)
+    closed_thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+    return closed_thresh
+
+
 def get_contour_with_max_size(contours):
     if len(contours) > 1:
         max_length_contour = 0

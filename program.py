@@ -38,11 +38,11 @@ def main(args):
 
 def printResults(classification):
     for i in range(len(classification)):
-        print(' '.join([str(x) for x in classification[i][:1]]))
+        print(' '.join([str(x) for x in classification[i][:10]]))
 
 
 def fixed_params():
-    return ['.', 'set0', '6']
+    return ['.', 'set7', '20']
 
 
 def sys_params():
