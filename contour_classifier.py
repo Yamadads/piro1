@@ -34,14 +34,14 @@ def get_classification(normalized_figures):
         dist[i_m] = [[hu_moments[i_m][i + 1][0] - hu_moments[i_m][i][0], [hu_moments[i_m][i][1], hu_moments[i_m][i + 1][1]]] for i in range(0, len(hu_moments[i_m]) - 1)]
         dist[i_m].sort(key=lambda x:x[0])
 
-    print dist
+    #print dist
 
-    print hu_moments[0]
-    print hu_moments[1]
+    #print hu_moments[0]
+    #print hu_moments[1]
 
     print '=================='
 
-    print dist
+    #print dist
 
     # TODO
 

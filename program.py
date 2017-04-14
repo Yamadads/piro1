@@ -3,6 +3,12 @@ import command_line_utils as clu
 import image_utils as iu
 import cv2
 import contour_classifier as cc
+import test_classifier as tc
+import warnings
+
+
+warnings.filterwarnings("ignore")
+
 
 def main(args):
     if not clu.check_command_line_arguments(args):
@@ -13,11 +19,12 @@ def main(args):
     normalized_figures = iu.normalize_figures(pictures, 300)
     #for i in range(pictures_no):
     #    iu.show_image(str(i), normalized_figures[i])
-    classification = cc.get_classification(normalized_figures)
+    #classification = cc.get_classification(normalized_figures)
     #printResults(classification)
     #print classification
 
-
+    classification = tc.get_classification(normalized_figures)
+    printResults(classification)
     #cont = iu.get_contour(normalized_figures[0])
     #cont = cv2.approxPolyDP(cont, 2,True)
     #cont = [value for value in cont if value>30]
@@ -31,7 +38,7 @@ def main(args):
 
 def printResults(classification):
     for i in range(len(classification)):
-        print(' '.join([str(x) for x in classification[i]]))
+        print(' '.join([str(x) for x in classification[i][:1]]))
 
 
 def fixed_params():

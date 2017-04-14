@@ -20,9 +20,9 @@ def normalize_figures(figures, normalized_width):
     return normalized_figures
 
 
-def show_image(text, image):
+def show_image(text, image, time):
     cv2.imshow(text, image)
-    cv2.waitKey(500)
+    cv2.waitKey(time)
     cv2.destroyAllWindows()
 
 
