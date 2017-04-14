@@ -12,12 +12,18 @@ def get_classification(normalized_figures):
     hu_moments = [[], []]
 
     for image_i in range(0, len(normalized_figures)):
+
         junction0 = extract_junction_image(normalized_figures[image_i])
+        #obliczamy 1 i 2 moment Hu
         insert_hu_moments(junction0, hu_moments, image_i)
 
+
         junction_1 = iu.rotate_bound(np.invert(junction0), 180)
+        # obraz sie rozmazuje... wiec go binaruzejmy
         ret, junction_1 = cv2.threshold(junction_1, 127, 255, 0)
+        # obliczamy jego Hu moments
         insert_hu_moments(junction_1, hu_moments, image_i)
+
 
     hu_moments[0].sort(key=lambda x:x[0])
     hu_moments[1].sort(key=lambda x:x[0])
@@ -28,10 +34,16 @@ def get_classification(normalized_figures):
         dist[i_m] = [[hu_moments[i_m][i + 1][0] - hu_moments[i_m][i][0], [hu_moments[i_m][i][1], hu_moments[i_m][i + 1][1]]] for i in range(0, len(hu_moments[i_m]) - 1)]
         dist[i_m].sort(key=lambda x:x[0])
 
-    print dist[0]
+    print dist
 
     print hu_moments[0]
-    #print hu_moments[1]
+    print hu_moments[1]
+
+    print '=================='
+
+    print dist
+
+    # TODO
 
     return
 
@@ -67,10 +79,14 @@ def test(normalized_figures):
 
 
 def insert_hu_moments(image, hu_list, id):
+    # obliczamy momenty Hu
     hu_jun_0 = cv2.HuMoments(cv2.moments(image)).flatten()
 
+    # tak wyglada -np.sign(hu_jun_0) * np.log10(np.abs(hu_jun_0)) normalizacja momentow hu
+    # ale w naszym przypadku nie potrzebujemy chyba az takiej informacji
     log_hu_jun_0 = hu_jun_0 # -np.sign(hu_jun_0) * np.log10(np.abs(hu_jun_0))
 
+    # odkladamy pierwszy i drugi moment Hu do tabeli z wartosciamy dla wszystkich figur
     hu_list[0].append([log_hu_jun_0[0], id])
     hu_list[1].append([log_hu_jun_0[1], id])
 
