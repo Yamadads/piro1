@@ -101,8 +101,13 @@ def get_rotated_to_figure_base(image, normalized_width):
             max_base = base_sum
             base = i
 
-    if len(images[base])>(len(images[base][0])*1.5):
-        base = (base+1)%4
+    if len(images[base])>(len(images[base][0])*1.4):
+        base_sum_1 = np.sum(images[(base+1)%4][:][-30:-2])
+        base_sum_2 = np.sum(images[(base+3)%4][:][-30:-2])
+        if base_sum_1>base_sum_2:
+            base = (base+1)%4
+        else:
+            base = (base+3)%4
 
     return images[base]
 

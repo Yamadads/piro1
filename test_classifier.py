@@ -40,7 +40,7 @@ def get_junction_images(images):
 def extract_junction_image(image):
     contour = get_junction_contour(image)
     max_y = max(contour, key=lambda x:x[1])[1]
-    if (max_y==0):
+    if (max_y<10):
         max_y = 10
     return image[:][:max_y]
 
