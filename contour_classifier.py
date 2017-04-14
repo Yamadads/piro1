@@ -4,56 +4,75 @@ import image_utils as iu
 import cv2
 import numpy as np
 
+hu_moments_in_use = 6
+
 
 def get_classification(normalized_figures):
-    hu_moments = [[], []]
+
+    hu_moments = [[] for i in range(0, hu_moments_in_use)]
 
     for image_i in range(0, len(normalized_figures)):
 
         junction0 = extract_junction_image(normalized_figures[image_i])
+
+        # iu.show_image('2', junction0)
+
         #obliczamy 1 i 2 moment Hu
         insert_hu_moments(junction0, hu_moments, image_i, False)
 
-        junction_1 = iu.rotate_bound(np.invert(junction0), 180)
+        # junction_1 = iu.rotate_bound(np.invert(junction0), 180)
+        junction_1 = np.invert(junction0)
 
         # obraz sie rozmazuje... wiec go binaruzejmy
-        ret, junction_1 = cv2.threshold(junction_1, 127, 255, 0)
+        # ret, junction_1 = cv2.threshold(junction_1, 127 , 255, 0)
 
         # obliczamy jego Hu moments
         insert_hu_moments(junction_1, hu_moments, image_i, True)
 
-    hu_moments[0].sort(key=lambda x:x[0])
-    hu_moments[1].sort(key=lambda x:x[0])
+    for hu_moment_id in range(0, hu_moments_in_use):
+        hu_moments[hu_moment_id].sort(key=lambda x:x[0])
+
+    # calculate every one to very one distance on every hu moment
+    dist = {}
+    for hu_moment_id in range(0, hu_moments_in_use):
+        for i in range(0, len(hu_moments[hu_moment_id]) - 1):
+            for el_i in range(i + 1, len(hu_moments[hu_moment_id])):
+                # can only compare inverted with non inverted images
+                if hu_moments[hu_moment_id][i][2] == hu_moments[hu_moment_id][el_i][2]:
+                    continue
+
+                if hu_moments[hu_moment_id][i][1] == hu_moments[hu_moment_id][el_i][1]:
+                    continue
+
+                tuple_pair = sorted([hu_moments[hu_moment_id][i][1], hu_moments[hu_moment_id][el_i][1]])
+                tuple_id = str(tuple_pair)[1:-1]
+
+                distance = hu_moments[hu_moment_id][el_i][0] - hu_moments[hu_moment_id][i][0]
+
+                if tuple_id not in dist:
+                    print 'id[{0}] i={1} el_i={2}'.format(tuple_id, i, el_i)
+                    dist[tuple_id] = [0, tuple_pair]
+
+                dist[tuple_id][0] += distance
+
+    sorted_dist = sorted(dist.items(), key=lambda x:x[1], reverse=False)
+
+    for val in sorted_dist:
+        print val
 
     results = []
 
     while True:
-        dist = [[], []]
 
-        for i_m in range(0, 2):
-            for i in range(0, len(hu_moments[i_m]) - 1):
-                for el_i in range(i, len(hu_moments[i_m])):
-                    # can only compare inverted with non inverted images
-                    if hu_moments[i_m][i][2] != hu_moments[i_m][el_i][2]:
-                        dist[i_m].append([hu_moments[i_m][el_i][0] - hu_moments[i_m][i][0], [hu_moments[i_m][i][1], hu_moments[i_m][el_i][1]]])
+        best = sorted_dist[0]
 
-            sorted(dist[i_m], reverse=True)
+        print 'best {0}'.format(best)
 
-        bests = [dist[0][0], dist[1][0]]
+        sorted_dist = [x for x in sorted_dist if not partly_same_tuple(x[1][1], best[1][1])]
 
-        id_smaller = 0 if bests[0][0] < bests[1][0] else 1
-        #print bests[id_smaller][1]
-        # remove from smaller
-        hu_moments[0] = [x for x in hu_moments[0] if x[1] not in bests[id_smaller][1]]
-        hu_moments[1] = [x for x in hu_moments[1] if x[1] not in bests[id_smaller][1]]
+        results.append(best[1][1])
 
-        #print (bests[id_smaller])
-        results.append(bests[id_smaller][1])
-        #print 'len ' + str(len(hu_moments[0]))
-
-
-
-        if len(hu_moments[0]) == 0:
+        if len(sorted_dist) == 0:
             break
 
     ordered_result = np.zeros(len(normalized_figures))
@@ -71,18 +90,19 @@ def partly_same_tuple(t_a, t_b):
             return True
     return False
 
-
 def insert_hu_moments(image, hu_list, id, reversed):
     # obliczamy momenty Hu
     hu_jun_0 = cv2.HuMoments(cv2.moments(image)).flatten()
 
     # tak wyglada -np.sign(hu_jun_0) * np.log10(np.abs(hu_jun_0)) normalizacja momentow hu
     # ale w naszym przypadku nie potrzebujemy chyba az takiej informacji
-    log_hu_jun_0 = hu_jun_0 # -np.sign(hu_jun_0) * np.log10(np.abs(hu_jun_0))
+    log_hu_jun_0 = -np.sign(hu_jun_0) * np.log10(np.abs(hu_jun_0))
+
+    print log_hu_jun_0
 
     # odkladamy pierwszy i drugi moment Hu do tabeli z wartosciamy dla wszystkich figur
-    hu_list[0].append([log_hu_jun_0[0], id, reversed])
-    hu_list[1].append([log_hu_jun_0[1], id, reversed])
+    for hu_moment_id in range(0, hu_moments_in_use):
+        hu_list[hu_moment_id].append([log_hu_jun_0[hu_moment_id], id, reversed])
 
 
 def extract_junction_image(image):
@@ -90,7 +110,7 @@ def extract_junction_image(image):
 
     max_y = max(contour, key=lambda x:x[1])[1]
 
-    return image[:][:max(1, max_y)]
+    return image[:][:min((max_y + 1), len(image[0]))]
 
     # slice = [arr[i][0:2] for i in range(0, 2)]
 
