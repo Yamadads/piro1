@@ -1,3 +1,5 @@
+from pandas.core.nanops import disallow
+
 import image_utils as iu
 import cv2
 import numpy as np
@@ -28,24 +30,60 @@ def get_classification(normalized_figures):
     hu_moments[0].sort(key=lambda x:x[0])
     hu_moments[1].sort(key=lambda x:x[0])
 
-    dist = [[],[]]
 
-    for i_m in range(0, 1):
-        dist[i_m] = [[hu_moments[i_m][i + 1][0] - hu_moments[i_m][i][0], [hu_moments[i_m][i][1], hu_moments[i_m][i + 1][1]]] for i in range(0, len(hu_moments[i_m]) - 1)]
-        dist[i_m].sort(key=lambda x:x[0])
 
-    print dist
+    results = [];
 
-    print hu_moments[0]
-    print hu_moments[1]
+    dist = [[], []]
 
-    print '=================='
+    for i_m in range(0, 2):
+        dist[i_m] = [
+            [hu_moments[i_m][i + 1][0] - hu_moments[i_m][i][0], [hu_moments[i_m][i][1], hu_moments[i_m][i + 1][1]]] for
+            i in range(0, len(hu_moments[i_m]) - 1)]
+        sorted(dist[i_m], reverse=True)
+        # dist[i_m].sort(key=lambda x:x[0], reversed=True)
 
-    print dist
+    while True:
 
-    # TODO
+        bests = [dist[0][0], dist[1][0]]
 
-    return
+        print bests
+
+        print hu_moments[0]
+        print hu_moments[1]
+
+        id_smaller = 0 if bests[0][0] < bests[1][0] else 1
+        id_bigger = abs(id_smaller - 1)
+
+        # remove from smaller
+        print 'before ' + str(len(dist[id_smaller]))
+        dist[id_smaller]= [x for x in dist[id_smaller] if not partly_same_tuple(x[1], bests[id_smaller][1])]
+        print 'after ' + str(len(dist[id_smaller]))
+
+        # remove leftout from bigger
+        print len(dist[0])
+
+        dist[id_bigger] = [x for x in dist[id_bigger] if not partly_same_tuple(x[1], bests[id_bigger][1])]
+        print len(dist[0])
+
+        results.append(bests[id_smaller][1])
+
+        # print results
+
+        if len(dist[0]) == 0:
+            break
+
+    print "result:"
+    print results
+
+
+def partly_same_tuple(t_a, t_b):
+    for x in [t_b[0], t_b[1]]:
+        if x in [t_a[0], t_a[1]]:
+            return True
+
+    print str(t_a) + ' is not realy ' + str(t_b)
+    return False
 
 
 def test(normalized_figures):
