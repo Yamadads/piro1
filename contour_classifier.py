@@ -3,6 +3,7 @@ from pandas.core.nanops import disallow
 import image_utils as iu
 import cv2
 import numpy as np
+import copy
 
 hu_moments_in_use = 6
 
@@ -57,8 +58,10 @@ def get_classification(normalized_figures):
 
                 dist[tuple_id][0] += distance
 
+
     sorted_dist = sorted(dist.items(), key=lambda x:x[1], reverse=False)
 
+    sorted_dist_orig = copy.copy(sorted_dist)
     #for val in sorted_dist:
     #    print val
 
@@ -68,8 +71,6 @@ def get_classification(normalized_figures):
 
         best = sorted_dist[0]
 
-        # print 'best {0}'.format(best)
-
         sorted_dist = [x for x in sorted_dist if not partly_same_tuple(x[1][1], best[1][1])]
 
         results.append(best[1][1])
@@ -77,13 +78,31 @@ def get_classification(normalized_figures):
         if len(sorted_dist) == 0:
             break
 
-    ordered_result = np.zeros(len(normalized_figures))
+    ordered_result = [[] for i in range(len(normalized_figures))]
 
     for x in results:
-        ordered_result[x[0]] = x[1]
-        ordered_result[x[1]] = x[0]
+
+        ordered_result[x[0]].append(x[1])
+        ordered_result[x[1]].append(x[0])
+
+        append_rest(x[0], x, ordered_result[x[0]], sorted_dist_orig)
+        append_rest(x[1], x, ordered_result[x[1]], sorted_dist_orig)
 
     return ordered_result
+
+
+def append_rest(target, tuple, result, sorted_dist_orig):
+    counter = 4
+    for next_cand in sorted_dist_orig:
+        if next_cand[1][1] == tuple:
+            continue
+
+        if target in next_cand[1][1]:
+            counter -= 1
+
+            result.append(next_cand[1][1][0] if next_cand[1][1][1] == target else next_cand[1][1][1])
+            if counter == 0:
+                break
 
 
 def partly_same_tuple(t_a, t_b):
