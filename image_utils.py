@@ -101,6 +101,9 @@ def get_rotated_to_figure_base(image, normalized_width):
             max_base = base_sum
             base = i
 
+    if len(images[base])>(len(images[base][0])*1.5):
+        base = (base+1)%4
+
     return images[base]
 
 

@@ -47,6 +47,8 @@ def checkDir(commanddir, path, N):
             idx = N - 1
         if idx < size-1:
             result[idx] += 1
+        #else:
+        #    print(line)
         result[-1] += 1.0 - idx / (float(N)-1)
     
     return result, stop-start;

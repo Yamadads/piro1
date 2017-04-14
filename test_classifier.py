@@ -29,7 +29,8 @@ def get_classification(normalized_figures):
 def get_junction_images(images):
     junction_images = []
     for image_i in range(0, len(images)):
-        # iu.show_image("test", normalized_figures[image_i], 1000)
+        #if image_i==14:
+        #    iu.show_image("test", normalized_figures[image_i], 1000)
         junction_image = extract_junction_image(images[image_i])
         junction_images.append(iu.get_binary_image(junction_image))
         #iu.show_image(str(image_i),iu.get_binary_image(junction_image),700)
@@ -52,7 +53,7 @@ def get_junction_contour(figure):
     #print("___")
 
     max_y = max(contour[:, 0, 1])
-    threshold = 50
+    threshold = 40
 
     result = sorted([r.tolist() for r in contour[:, 0, :] if r[1] < max_y - threshold], key=lambda idx: idx[0])
 
