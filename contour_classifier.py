@@ -15,6 +15,7 @@ def get_classification(normalized_figures):
 
         junction0 = extract_junction_image(normalized_figures[image_i])
 
+        ret, junction0 = cv2.threshold(junction0, 127 , 255, 0)
         # iu.show_image('2', junction0)
 
         #obliczamy 1 i 2 moment Hu
@@ -24,10 +25,11 @@ def get_classification(normalized_figures):
         junction_1 = np.invert(junction0)
 
         # obraz sie rozmazuje... wiec go binaruzejmy
-        # ret, junction_1 = cv2.threshold(junction_1, 127 , 255, 0)
+
 
         # obliczamy jego Hu moments
         insert_hu_moments(junction_1, hu_moments, image_i, True)
+
 
     for hu_moment_id in range(0, hu_moments_in_use):
         hu_moments[hu_moment_id].sort(key=lambda x:x[0])
