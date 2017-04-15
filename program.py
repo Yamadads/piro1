@@ -16,7 +16,8 @@ def main(args):
     #for i in range(pictures_no):
     #    iu.show_image(str(i), normalized_figures[i])
     for res in cc.get_classification(normalized_figures):
-        print (int(res))
+        stre = ' '.join([str(i) for i in res])
+        print stre
     # printResults(classification)
     #print classification
 
